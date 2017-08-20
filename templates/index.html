@@ -5,6 +5,16 @@
     <title>Title</title>
     <script>
         var number = NaN;
+        var character_type = NaN;
+        var function_target = NaN;
+        var isGood = NaN
+        var alive = NaN
+        var awaked = false
+        var final_awake = false
+
+        function execute_function() {
+            function_target = document.getElementById('function_number').value;
+        }
 
         function choose_character() {
             number = document.getElementById('number').value;
@@ -15,11 +25,12 @@
             }
             xhr.open('get', '/character?number=' + number, false);
             xhr.onreadystatechange = function () {
-                let obj = JSON.parse(xhr.responseText)
+                let obj = JSON.parse(xhr.responseText);
+                character_type = obj.type;
                 document.getElementById('A1').innerHTML = obj.type;
                 document.getElementById('A2').innerHTML = obj.number;
                 document.getElementById('prepare').innerHTML = "";
-                xhr.abort()
+                xhr.abort();
                 wait_others_ready();
             };
             xhr.send();
@@ -36,17 +47,90 @@
                 let xhr = new XMLHttpRequest();
                 xhr.open('get', '/wait-others?number=' + number, false);
                 xhr.onreadystatechange = function () {
-                    let obj = JSON.parse(xhr.responseText)
+                    let obj = JSON.parse(xhr.responseText);
                     if (!obj.ready) {
                         document.getElementById('A3').innerHTML = "以下玩家还没有准备好" + obj.noReady.join(" ");
-                    }else {
-                        document.getElementById('A3').innerHTML = "游戏开始，天黑请闭眼！"
-                        window.clearInterval(eventId)
+                    } else {
+                        document.getElementById('A3').innerHTML = "游戏开始，天黑请闭眼！";
+                        window.clearInterval(eventId);
+                        xhr.abort();
+                        navigator.vibrate([500, 300, 400, 300]);
+                        setTimeout(process_round(), 5000);
                     }
                 }
                 xhr.send();
                 console.log('send a request');
             }, 3000)
+        }
+
+        function process_round() {
+            let url = `/execute-function?number=${number}`;
+            setInterval(function () {
+                let xhr = new XMLHttpRequest();
+                xhr.open('get', url, false);
+                xhr.onreadystatechange = function () {
+                    let obj = JSON.parse(xhr.responseText)
+                    if (obj.round === 'kill' && character_type === '狼人') {
+                        if (!awaked) {
+                            navigator.vibrate([500, 300, 400, 300]);
+                            awaked = true
+                        }
+                        document.getElementById('A4').innerHTML = `狼人请杀人，请由一位玩家输入今晚的击杀目标`;
+                        if (!isNaN(function_target)) {
+                            url = `/execute-function?number=${number}&killed=${function_target}`;
+                            {#                            document.getElementById('A5').innerHTML  = "";#}
+                        }
+                    }
+                    if (obj.round === 'heal') {
+                        if (character_type === '女巫') {
+                            if (!awaked) {
+                                navigator.vibrate([500, 300, 400, 300]);
+                                awaked = true
+                            }
+                            let people_killed = obj.people_killed;
+                            document.getElementById('A4').innerHTML = `女巫，昨晚晚上死亡的是${people_killed}号，如使用解药请输入被杀人的号码，如使用毒药则输入一个其他号码，如不使用要则输入0`;
+                            if (!isNaN(function_target)) {
+                                url = `/execute-function?number=${number}&heal=${function_target}`;
+                                {#                            document.getElementById('A5').innerHTML  = "";#}
+                            }
+                        } else {
+                            document.getElementById('A4').innerHTML = "";
+                        }
+                    }
+                    if (obj.round === 'check') {
+                        if (character_type === '预言家') {
+                            if (!awaked) {
+                                navigator.vibrate([500, 300, 400, 300]);
+                                awaked = true
+                            }
+                            if (obj.hasOwnProperty('is_good')) {
+                                if (obj.is_good) {
+                                    isGood = '好人'
+                                } else {
+                                    isGood = '狼人'
+                                }
+                                document.getElementById('A4').innerHTML = `预言家，${function_target}的身份是${isGood}`
+                            } else {
+                                document.getElementById('A4').innerHTML = `预言家，请输入今晚你想验证的人的数字（1-12）`
+                                if (!isNaN(function_target)) {
+                                    url = `/execute-function?number=${number}&check=${function_target}`;
+                                    {#                            document.getElementById('A5').innerHTML  = "";#}
+                                }
+                            }
+                        }
+                    }
+                    if (obj.round === 'elect') {
+                        alive = obj.alive
+                        setTimeout(function () {
+                            if(!final_awake){
+                            navigator.vibrate([500, 300, 400,300]);
+                            final_awake = true
+                        }
+                        },5000)
+                    }
+                };
+                xhr.send();
+            }, 3000);
         }
     </script>
 </head>
@@ -68,5 +152,17 @@
     <b>信息</b>
     <span id="A3"></span>
 </p>
+<div>
+    <b>功能</b>
+    <div id="A5">
+        <p id="A4"></p>
+        <input id="function_number">
+        <button onclick="execute_function()">submit</button>
+    </div>
+</div>
+<div>
+    <p id="A6"></p>
+    <button onclick="document.getElementById('A6').innerHTML = alive">查看今晚结果（请警长竞选结束后点击）</button>
+</div>
 </body>
 </html>
