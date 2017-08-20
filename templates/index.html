@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        var number = NaN;
+
+        function choose_character() {
+            number = document.getElementById('number').value;
+            let xhr = new XMLHttpRequest();
+            if (isNaN(Number(number)) || Number(number) > 12 || Number(number) < 0) {
+                alert("请输入1到12的合法数字");
+                return;
+            }
+            xhr.open('get', '/character?number=' + number, false);
+            xhr.onreadystatechange = function () {
+                let obj = JSON.parse(xhr.responseText)
+                document.getElementById('A1').innerHTML = obj.type;
+                document.getElementById('A2').innerHTML = obj.number;
+                document.getElementById('prepare').innerHTML = "";
+                xhr.abort()
+                wait_others_ready();
+            };
+            xhr.send();
+        }
+
+        function show() {
+            console.log("asdad");
+        }
+
+        function wait_others_ready() {
+            console.log("wait_others_ready");
+            {#            let xhr = new XMLHttpRequest();#}
+            let eventId = setInterval(function () {
+                let xhr = new XMLHttpRequest();
+                xhr.open('get', '/wait-others?number=' + number, false);
+                xhr.onreadystatechange = function () {
+                    let obj = JSON.parse(xhr.responseText)
+                    if (!obj.ready) {
+                        document.getElementById('A3').innerHTML = "以下玩家还没有准备好" + obj.noReady.join(" ");
+                    }else {
+                        document.getElementById('A3').innerHTML = "游戏开始，天黑请闭眼！"
+                        window.clearInterval(eventId)
+                    }
+                }
+                xhr.send();
+                console.log('send a request');
+            }, 3000)
+        }
+    </script>
+</head>
+<body>
+<div id="prepare">
+    <p>请输入你的号码</p>
+    <input id="number">
+    <button onclick="choose_character()">submit</button>
+</div>
+<p>
+    <b>你的身份是:</b>
+    <span id="A1"></span>
+</p>
+<p>
+    <b>你的号码是:</b>
+    <span id="A2"></span>
+</p>
+<p>
+    <b>信息</b>
+    <span id="A3"></span>
+</p>
+</body>
+</html>
