@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <button class="btn audio" onclick="document.getElementById('audio1').play();document.getElementById('audio2').play(); ">
+        播放语音
+        <audio src="{{ url_for('static', filename='audio/女巫.mp3') }}" id="audio1"></audio>
+        <audio src="{{ url_for('static', filename='audio/狼人.mp3') }}" id="audio2"></audio>
+    </button>
+</body>
+</html>

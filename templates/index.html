@@ -7,10 +7,22 @@
         var number = NaN;
         var character_type = NaN;
         var function_target = NaN;
-        var isGood = NaN
-        var alive = NaN
-        var awaked = false
-        var final_awake = false
+        var isGood = NaN;
+        var alive = NaN;
+        var awaked = false;
+        var final_awake = false;
+        var langrenopen = true;
+        var langrenclose = true;
+        var nvwuopen = true;
+        var nvwuclose = true;
+        var yuyanjiaopen = true;
+        var yuyanjiaclose = true;
+        var jingxuan = true;
+        var tianliangle = true;
+        navigator.vibrate = navigator.vibrate
+            || navigator.webkitVibrate
+            || navigator.mozVibrate
+            || navigator.msVibrate;
 
         function execute_function() {
             function_target = document.getElementById('function_number').value;
@@ -19,7 +31,7 @@
         function choose_character() {
             number = document.getElementById('number').value;
             let xhr = new XMLHttpRequest();
-            if (isNaN(Number(number)) || Number(number) > 12 || Number(number) < 0) {
+            if (isNaN(Number(number)) || Number(number) > 12 || Number(number) < -1) {
                 alert("请输入1到12的合法数字");
                 return;
             }
@@ -51,10 +63,19 @@
                     if (!obj.ready) {
                         document.getElementById('A3').innerHTML = "以下玩家还没有准备好" + obj.noReady.join(" ");
                     } else {
+                        if (character_type === '上帝') {
+                            document.getElementById('闭眼').play();
+                        }
                         document.getElementById('A3').innerHTML = "游戏开始，天黑请闭眼！";
                         window.clearInterval(eventId);
                         xhr.abort();
-                        navigator.vibrate([500, 300, 400, 300]);
+                        if (navigator.vibrate) {
+                            //vibrate 1 second
+                            navigator.vibrate(1000);
+                        } else if (navigator.webkitVibrate) {
+                            navigator.webkitVibrate(1000);
+                        }
+                        {#                        navigator.vibrate([500, 300, 400, 300]);#}
                         setTimeout(process_round(), 5000);
                     }
                 }
@@ -65,32 +86,65 @@
 
         function process_round() {
             let url = `/execute-function?number=${number}`;
-            setInterval(function () {
+            let eventId = setInterval(function () {
                 let xhr = new XMLHttpRequest();
                 xhr.open('get', url, false);
                 xhr.onreadystatechange = function () {
                     let obj = JSON.parse(xhr.responseText)
-                    if (obj.round === 'kill' && character_type === '狼人') {
-                        if (!awaked) {
-                            navigator.vibrate([500, 300, 400, 300]);
-                            awaked = true
+                    if (obj.round === 'kill') {
+                        if (langrenopen && character_type === '上帝') {
+                            setTimeout(function () {
+                                document.getElementById('狼人').play()
+                            }, 3000);
+                            langrenopen = false
+
                         }
-                        document.getElementById('A4').innerHTML = `狼人请杀人，请由一位玩家输入今晚的击杀目标`;
-                        if (!isNaN(function_target)) {
-                            url = `/execute-function?number=${number}&killed=${function_target}`;
-                            {#                            document.getElementById('A5').innerHTML  = "";#}
+                        if (character_type === '狼人') {
+                            if (!awaked) {
+                                if (navigator.vibrate) {
+                                    //vibrate 1 second
+                                    navigator.vibrate(1000);
+                                } else if (navigator.webkitVibrate) {
+                                    navigator.webkitVibrate(1000);
+                                }
+                                awaked = true
+                            }
+                            document.getElementById('A4').innerHTML = `狼人请杀人，请其他狼人闭眼后由一位玩家输入今晚的击杀目标`;
+                            if (!isNaN(function_target)) {
+                                url = `/execute-function?number=${number}&killed=${function_target}`;
+                                document.getElementById('A4').innerHTML = `狼人请闭眼`;
+                                {#                            document.getElementById('A5').innerHTML  = "";#}
+                            }
                         }
                     }
                     if (obj.round === 'heal') {
+                        if (character_type === '上帝') {
+                            if (langrenclose) {
+                                document.getElementById('狼人闭眼').play();
+                                langrenclose = false
+                            }
+                            if (nvwuopen) {
+                                setTimeout(function () {
+                                    document.getElementById('女巫').play()
+                                }, 3000);
+                                nvwuopen = false
+                            }
+                        }
                         if (character_type === '女巫') {
                             if (!awaked) {
-                                navigator.vibrate([500, 300, 400, 300]);
+                                if (navigator.vibrate) {
+                                    //vibrate 1 second
+                                    navigator.vibrate(1000);
+                                } else if (navigator.webkitVibrate) {
+                                    navigator.webkitVibrate(1000);
+                                }
                                 awaked = true
                             }
                             let people_killed = obj.people_killed;
                             document.getElementById('A4').innerHTML = `女巫，昨晚晚上死亡的是${people_killed}号，如使用解药请输入被杀人的号码，如使用毒药则输入一个其他号码，如不使用要则输入0`;
                             if (!isNaN(function_target)) {
                                 url = `/execute-function?number=${number}&heal=${function_target}`;
+                                document.getElementById('A4').innerHTML = '女巫，请闭眼'
                                 {#                            document.getElementById('A5').innerHTML  = "";#}
                             }
                         } else {
@@ -98,9 +152,26 @@
                         }
                     }
                     if (obj.round === 'check') {
+                        if (character_type === '上帝') {
+                            if (nvwuclose) {
+                                document.getElementById('女巫闭眼').play();
+                                nvwuclose = false
+                            }
+                            if (yuyanjiaopen) {
+                                setTimeout(function () {
+                                    document.getElementById('预言家').play()
+                                }, 3000);
+                                yuyanjiaopen = false
+                            }
+                        }
                         if (character_type === '预言家') {
                             if (!awaked) {
-                                navigator.vibrate([500, 300, 400, 300]);
+                                if (navigator.vibrate) {
+                                    //vibrate 1 second
+                                    navigator.vibrate(1000);
+                                } else if (navigator.webkitVibrate) {
+                                    navigator.webkitVibrate(1000);
+                                }
                                 awaked = true
                             }
                             if (obj.hasOwnProperty('is_good')) {
@@ -120,13 +191,48 @@
                         }
                     }
                     if (obj.round === 'elect') {
-                        alive = obj.alive
-                        setTimeout(function () {
-                            if(!final_awake){
-                            navigator.vibrate([500, 300, 400,300]);
-                            final_awake = true
+                        if (character_type == '上帝') {
+                            if (yuyanjiaclose) {
+                                document.getElementById('预言家闭眼').play();
+                                yuyanjiaclose = false
+                            }
+                            if (jingxuan && !yuyanjiaclose) {
+                                setTimeout(function () {
+                                    document.getElementById('竞选').play();
+                                    jingxuan = false;
+                                }, 3000);
+                            }
+                            if (tianliangle && !jingxuan) {
+                                setTimeout(function () {
+                                    document.getElementById('天亮了').play();
+                                    window.clearInterval(eventId);
+                                    xhr.abort();
+                                }, 10000);
+                                tianliangle = false
+                            }
                         }
-                        },5000)
+                        {#                        alive = obj.alive#}
+                        let died = [];
+                        let index = 0;
+                        console.log(obj)
+                        for (i = 1; i < 13; i++) {
+                            if (!obj.alive[i]) {
+                                died[index++] = i;
+                            }
+                        }
+                        console.log(died)
+                        if (died.length == 0) {
+                            alive = "昨夜是平安夜";
+                        } else {
+                            alive = `昨夜死亡的是${died[0]}号玩家`
+                            if (died.length === 2) {
+                                alive += `和${died[1]}号玩家`
+                            }
+                            if (character_type === '猎人' && obj.poison == number) {
+                                alive += "猎人你被毒死了不能开枪";
+                            }
+                        }
+
                     }
                 };
                 xhr.send();
@@ -135,34 +241,45 @@
     </script>
 </head>
 <body>
-<div id="prepare">
-    <p>请输入你的号码</p>
-    <input id="number">
-    <button onclick="choose_character()">submit</button>
-</div>
-<p>
-    <b>你的身份是:</b>
-    <span id="A1"></span>
-</p>
-<p>
-    <b>你的号码是:</b>
-    <span id="A2"></span>
-</p>
-<p>
-    <b>信息</b>
-    <span id="A3"></span>
-</p>
-<div>
-    <b>功能</b>
-    <div id="A5">
-        <p id="A4"></p>
-        <input id="function_number">
-        <button onclick="execute_function()">submit</button>
+    <div id="prepare">
+        <p>请输入你的号码</p>
+        <input id="number">
+        <button onclick="choose_character()">submit</button>
     </div>
-</div>
-<div>
-    <p id="A6"></p>
-    <button onclick="document.getElementById('A6').innerHTML = alive">查看今晚结果（请警长竞选结束后点击）</button>
-</div>
+    <p>
+        <b>你的身份是:</b>
+        <span id="A1"></span>
+    </p>
+    <p>
+        <b>你的号码是:</b>
+        <span id="A2"></span>
+    </p>
+    <p>
+        <b>信息</b>
+        <span id="A3"></span>
+    </p>
+    <div>
+        <b>功能</b>
+        <div id="A5">
+            <p id="A4"></p>
+            <input id="function_number">
+            <button onclick="execute_function()">submit</button>
+        </div>
+    </div>
+    <div>
+        <p id="A6"></p>
+        <button onclick="document.getElementById('A6').innerHTML = alive">查看今晚结果（请警长竞选结束后点击）</button>
+    </div>
+    <div>
+        <audio src="{{ url_for('static', filename='audio/闭眼.mp3') }}" id="闭眼"></audio>
+        <audio src="{{ url_for('static', filename='audio/狼人.mp3') }}" id="狼人"></audio>
+        <audio src="{{ url_for('static', filename='audio/女巫.mp3') }}" id="女巫"></audio>
+        <audio src="{{ url_for('static', filename='audio/预言家.mp3') }}" id="预言家"></audio>
+        <audio src="{{ url_for('static', filename='audio/预言家闭眼.mp3') }}" id="预言家闭眼"></audio>
+        <audio src="{{ url_for('static', filename='audio/女巫闭眼.mp3') }}" id="女巫闭眼"></audio>
+        <audio src="{{ url_for('static', filename='audio/狼人闭眼.mp3') }}" id="狼人闭眼"></audio>
+        <audio src="{{ url_for('static', filename='audio/竞选.mp3') }}" id="竞选"></audio>
+        <audio src="{{ url_for('static', filename='audio/天亮了.mp3') }}" id="天亮了"></audio>
+    </div>
 </body>
 </html>
