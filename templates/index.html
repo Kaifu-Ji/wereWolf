@@ -214,13 +214,11 @@
                         {#                        alive = obj.alive#}
                         let died = [];
                         let index = 0;
-                        console.log(obj)
                         for (i = 1; i < 13; i++) {
                             if (!obj.alive[i]) {
                                 died[index++] = i;
                             }
                         }
-                        console.log(died)
                         if (died.length == 0) {
                             alive = "昨夜是平安夜";
                         } else {
@@ -232,6 +230,9 @@
                                 alive += "猎人你被毒死了不能开枪";
                             }
                         }
+                        setTimeout(function () {
+                            document.getElementById('A3').innerHTML = `天亮了`;
+                        },13000);
 
                     }
                 };
