@@ -90,7 +90,7 @@
                 let xhr = new XMLHttpRequest();
                 xhr.open('get', url, false);
                 xhr.onreadystatechange = function () {
-                    let obj = JSON.parse(xhr.responseText)
+                    let obj = JSON.parse(xhr.responseText);
                     if (obj.round === 'kill') {
                         if (langrenopen && character_type === '上帝') {
                             setTimeout(function () {
@@ -114,6 +114,7 @@
                                 url = `/execute-function?number=${number}&killed=${function_target}`;
                                 document.getElementById('A4').innerHTML = `狼人请闭眼`;
                                 {#                            document.getElementById('A5').innerHTML  = "";#}
+                                function_target = NaN
                             }
                         }
                     }
@@ -144,7 +145,8 @@
                             document.getElementById('A4').innerHTML = `女巫，昨晚晚上死亡的是${people_killed}号，如使用解药请输入被杀人的号码，如使用毒药则输入一个其他号码，如不使用要则输入0`;
                             if (!isNaN(function_target)) {
                                 url = `/execute-function?number=${number}&heal=${function_target}`;
-                                document.getElementById('A4').innerHTML = '女巫，请闭眼'
+                                document.getElementById('A4').innerHTML = '女巫，请闭眼';
+                                function_target = NaN
                                 {#                            document.getElementById('A5').innerHTML  = "";#}
                             }
                         } else {
