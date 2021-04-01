@@ -1,7 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, render_template, session, request, jsonify, redirect, url_for
+from flask_socketio import SocketIO
 import configure
 import random
 import json
+
 
 character = ['狼人'] * 4 + ['村民'] * 4 + ["猎人"] + ["预言家"] + ["女巫"] + ["白痴神"]
 current_round = 0
@@ -22,6 +24,8 @@ print(people_killed)
 
 def create_app():
     app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'top-secret!'
+    app.config['SESSION_TYPE'] = 'filesystem'
     app.config.from_object(configure)
 
     @app.route('/')
@@ -99,9 +103,8 @@ def create_app():
             return json.dumps({'round': 'elect', 'alive': alive,'poison':nvwukilled})
 
     return app
-
-
-application = create_app()
+app = create_app()
+socketio = SocketIO(app, manage_session=False)
 
 if __name__ == '__main__':
-    application.run(host="0.0.0.0")
+    socketio.run(app, host='0.0.0.0',port=80)
