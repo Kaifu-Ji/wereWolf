@@ -42,7 +42,7 @@ def create_app():
     @app.route("/wait-others")
     def wait_others():
         global ready
-        is_ready = sum(ready) > 3
+        is_ready = sum(ready) > 12
         if is_ready:
             return json.dumps({'ready': True})
         else:
